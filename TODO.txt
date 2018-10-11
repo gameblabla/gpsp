@@ -1,0 +1,6 @@
+# I need to remove the menu that is provided with GPSP.
+Why ? It's simply way too buggy... But before i can do that, i must make sure our temporary menu
+supports most of its features.
+
+# Merge some reGBA's commits. reGBA shares some code with gpsp, but not everything is similar.
+In fact, you could even argue that reGBA is a different emulator altogether...

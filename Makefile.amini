@@ -1,0 +1,22 @@
+
+TARGET := gpsp.dge
+
+CC := /opt/rs97-toolchain/usr/bin/mipsel-linux-gcc
+SDL_CONFIG := /opt/rs97-toolchain/usr/mipsel-buildroot-linux-musl/sysroot/usr/bin/sdl-config
+
+OBJS := amini/main.o cpu.o memory.o amini/video.o amini/input.o sound.o gui.o \
+	cheats.o zip.o cpu_threaded.o mips_stub.o amini/mygui.o sha1.o
+
+CFLAGS := `$(SDL_CONFIG) --cflags` -I. -Wall -Ofast -DZAURUS -mno-abicalls -mplt -mips32 -mlong-calls -fdata-sections -ffunction-sections
+ASFLAGS := $(CFLAGS)
+LDFLAGS := `$(SDL_CONFIG) --libs` -lpthread -lz -lm -Wl,--as-needed -Wl,--gc-sections -flto -s
+
+.PHONY: all $(TARGET) clean
+
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
+
+clean:
+	rm -f $(TARGET) $(OBJS)
