@@ -31,6 +31,8 @@ static int32_t savestate_slot = 0;
 extern int load_state(const char *savestate_filename);
 extern int save_state(const char *savestate_filename, uint16_t *screen_capture);
 
+extern int screen_scale;
+
 static void screen_showchar(SDL_Surface *s, int32_t x, int32_t y, uint8_t a, const int32_t fg_color, const int32_t bg_color) 
 {
 	uint16_t *dst;
@@ -78,7 +80,21 @@ uint32_t MyGUI()
 		
 		print_string_menu("Save State", COLOR_ACTIVE_ITEM, 0, 32, 80); 
 		
-		print_string_menu("Exit GPSP", COLOR_ACTIVE_ITEM, 0, 32, 96); 
+		switch(screen_scale)
+		{
+			case 0:
+				print_string_menu("Scaling : None", COLOR_ACTIVE_ITEM, 0, 32, 96); 
+			break;
+			case 1:
+				print_string_menu("Scaling : Aspect", COLOR_ACTIVE_ITEM, 0, 32, 96); 
+			break;
+			case 2:
+				print_string_menu("Scaling : Fullscreen", COLOR_ACTIVE_ITEM, 0, 32, 96); 
+			break;
+		}
+		
+		
+		print_string_menu("Exit GPSP", COLOR_ACTIVE_ITEM, 0, 32, 112); 
 		
 		print_string_menu("=>", COLOR_LIGHT, 0, 16, 48 + (choice_menu * 16)); 
 		
@@ -92,8 +108,22 @@ uint32_t MyGUI()
 				switch( event.key.keysym.sym )
                 {
                     case SDLK_LEFT:
+                        switch(choice_menu)
+                        {
+							case 3:
+								screen_scale -= 1;
+								if (screen_scale < 0) screen_scale = 2;
+							break;
+						}
 					break;
                     case SDLK_RIGHT:
+                        switch(choice_menu)
+                        {
+							case 3:
+								screen_scale += 1;
+								if (screen_scale > 2) screen_scale = 0;
+							break;
+						}
 					break;
                     case SDLK_UP:
                         choice_menu -= 1;
@@ -101,7 +131,7 @@ uint32_t MyGUI()
 					break;
                     case SDLK_DOWN:
                         choice_menu += 1;
-                        if (choice_menu > 3) choice_menu = 3;
+                        if (choice_menu > 4) choice_menu = 4;
 					break;
                     case SDLK_LCTRL:
                         switch(choice_menu)
@@ -137,6 +167,10 @@ uint32_t MyGUI()
 								//free(current_screen);
 							break;
 							case 3:
+								screen_scale += 1;
+								if (screen_scale > 2) screen_scale = 0;
+							break;
+							case 4:
 								done = 2;
 								//save_config_file();
 								//quit();

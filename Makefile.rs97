@@ -7,7 +7,11 @@ SDL_CONFIG := /opt/rs97-toolchain/usr/mipsel-buildroot-linux-musl/sysroot/usr/bi
 OBJS := rs97/main.o cpu.o memory.o rs97/video.o rs97/input.o sound.o gui.o \
 	cheats.o zip.o cpu_threaded.o mips_stub.o rs97/mygui.o sha1.o
 
-CFLAGS := `$(SDL_CONFIG) --cflags`  -I. -Wall -O3 -DRS97 -mno-abicalls -mplt -mips32 -DZAURUS -mlong-calls -fdata-sections -ffunction-sections
+CFLAGS := `$(SDL_CONFIG) --cflags`  -I. -Wall -Ofast -DRS97 -mno-abicalls -mplt -mips32 -DZAURUS -fdata-sections -ffunction-sections  -fprofile-use
+CFLAGS		+= -mno-relax-pic-calls -mlong32 -mlocal-sdata -mframe-header-opt -mno-check-zero-division -mfp32 -mgp32 -mno-embedded-data -fno-pic -mno-interlink-compressed -mno-mt -mno-micromips -mno-interlink-mips16
+CFLAGS += -fdata-sections -ffunction-sections -fno-threadsafe-statics  -fno-math-errno -funsafe-math-optimizations -fassociative-math -ffinite-math-only -fsingle-precision-constant -fsection-anchors -falign-functions=2 -mno-check-zero-division
+
+
 ASFLAGS := $(CFLAGS)
 LDFLAGS := `$(SDL_CONFIG) --libs` -lpthread -lz -lm -Wl,--as-needed -Wl,--gc-sections -flto -s
 

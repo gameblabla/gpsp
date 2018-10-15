@@ -431,7 +431,7 @@ u32 joy_map(u32 button)
     case 8:
       return BUTTON_SELECT;
 
-    case 0:
+    case 2:
       return BUTTON_B;
 
     case 1:
@@ -469,22 +469,22 @@ u32 joy_axis_map(u32 value, u16 axis)
 	{
 		if (axis > 500)
 		{
-			result |= BUTTON_UP;
+			result |= BUTTON_LEFT;
 		}
 		else if (axis < -500)
 		{
-			result |= BUTTON_DOWN;
+			result |= BUTTON_RIGHT;
 		}
 	}
 	else if (value == 1)
 	{
 		if (axis > 500)
 		{
-			result |= BUTTON_LEFT;
+			result |= BUTTON_UP;
 		}
 		else if (axis < -500)
 		{
-			result |= BUTTON_RIGHT;
+			result |= BUTTON_DOWN;
 		}
 	}
 
@@ -555,11 +555,66 @@ gui_action_type get_gui_input_fs_hold(u32 button_id)
   return get_gui_input();
 }
 
+SDL_Joystick *joy;
+
 u32 update_input()
 {
 	uint8_t *keystate = SDL_GetKeyState(NULL);
 	int d = 0;
-  SDL_Event event;
+	SDL_Event event;
+
+	SDL_JoystickUpdate();
+
+	if ((keystate[SDLK_RETURN] && keystate[SDLK_ESCAPE]) || (SDL_JoystickGetButton(joy, 8) && SDL_JoystickGetButton(joy, 9)))
+	{
+		d = MyGUI();
+		if (d == 1)
+		{
+			quit();
+		}
+		key = 0;
+		io_registers[REG_P1] = 0x3FF;
+	}
+	
+	if (SDL_JoystickGetAxis(joy, 0) < -500) 
+	{
+		key |= BUTTON_LEFT;
+		trigger_key(key);
+	}
+	else
+	{
+		key &= ~BUTTON_LEFT;
+	}
+	
+	if (SDL_JoystickGetAxis(joy, 0) > 500)
+	{
+		key |= BUTTON_RIGHT;
+		trigger_key(key);
+	}
+	else
+	{
+		key &= ~BUTTON_RIGHT;
+	}
+	
+	if (SDL_JoystickGetAxis(joy, 1) < -500)
+	{
+		key |= BUTTON_UP;
+		trigger_key(key);
+	}
+	else
+	{
+		key &= ~BUTTON_UP;
+	}
+	
+	if (SDL_JoystickGetAxis(joy, 1) > 500)
+	{
+		key |= BUTTON_DOWN;
+		trigger_key(key);
+	}
+	else
+	{
+		key &= ~BUTTON_DOWN;
+	}
 
   while(SDL_PollEvent(&event))
   {
@@ -576,11 +631,7 @@ u32 update_input()
 			case SDLK_END:
 			case SDLK_3:
 			{
-#else
-			case SDLK_ESCAPE:
-			{
-				if (keystate[SDLK_RETURN])
-#endif
+
 				{
 					d = MyGUI();
 					if (d == 1)
@@ -598,7 +649,7 @@ u32 update_input()
 			  return ret_val;
 			  * */
 			}
-
+#endif
 			case SDLK_F1:
 			{
 			  current_debug_state = STEP;
@@ -732,12 +783,12 @@ u32 update_input()
         break;
       }
 
-      case SDL_JOYAXISMOTION:
+     /* case SDL_JOYAXISMOTION:
       {
-			key = (key & 0xFF0F) | joy_axis_map(event.jaxis.value, event.jaxis.axis);
+			key |= joy_axis_map(event.jaxis.value, event.jaxis.axis);
 			trigger_key(key);
         break;
-      }
+      }*/
 
       case SDL_JOYHATMOTION:
       {
@@ -772,7 +823,7 @@ void init_input()
 
   if(joystick_count > 0)
   {
-    SDL_JoystickOpen(0);
+    joy = SDL_JoystickOpen(0);
     SDL_JoystickEventState(SDL_ENABLE);
   }
 #ifdef ZAURUS

@@ -28,6 +28,7 @@ static int32_t choice_menu = 0;
 uint16_t GBA_screen[(240*160)*2];
 
 static int32_t savestate_slot = 0;
+extern SDL_Joystick *joy;
 extern int load_state(const char *savestate_filename);
 extern int save_state(const char *savestate_filename, uint16_t *screen_capture);
 
@@ -63,13 +64,14 @@ uint32_t MyGUI()
 	char current_savestate_filename[256];
 	SDL_Event event;
 	uint8_t done = 0;
+	
+	savestate_slot = 0;
+	choice_menu = 0;
+	
 	if (background_tmp == NULL)
 	{
 		background_tmp = SDL_LoadBMP("background.bmp");
 	}
-	
-	savestate_slot = 0;
-	choice_menu = 0;
 	
 	if (backbuffer == NULL)
 	{
@@ -92,6 +94,23 @@ uint32_t MyGUI()
 		print_string_menu("=>", COLOR_LIGHT, 0, 16, 48 + (choice_menu * 16)); 
 		SDL_BlitSurface(backbuffer, NULL, display, NULL);
 		SDL_Flip(display);
+		
+		SDL_JoystickUpdate();
+		
+		if (SDL_JoystickGetAxis(joy, 1) < -500) 
+		{
+			choice_menu -= 1;
+			if (choice_menu < 0) choice_menu = 0;
+			SDL_Delay(80);
+		}
+		else if (SDL_JoystickGetAxis(joy, 1) > 500) 
+		{
+			choice_menu += 1;
+			if (choice_menu > 3) choice_menu = 3;
+			SDL_Delay(80);
+		}
+		
+
 		while( SDL_PollEvent( &event ) )
 		{
 			switch( event.type )
@@ -133,8 +152,6 @@ uint32_t MyGUI()
 							break;
 							case 3:
 								done = 2;
-								//save_config_file();
-								//quit();
 							break;
 						}
 					break;
@@ -142,6 +159,38 @@ uint32_t MyGUI()
 					break;
                 }
 				break;
+				case SDL_JOYBUTTONDOWN:
+				{
+					switch(event.jbutton.button)
+					{
+						case 2:
+                        switch(choice_menu)
+                        {
+							case 0:
+								done = 1;
+							break;
+							/* Load state */
+							case 1:
+								strcpy(current_savestate_filename, gamepak_filename);
+								strcat(current_savestate_filename, ".svs");
+								load_state((const char*)current_savestate_filename);
+								done = 1;
+							break;
+							/* Save State */
+							case 2:
+								memset(GBA_screen, 0, sizeof(GBA_screen));
+								strcpy(current_savestate_filename, gamepak_filename);
+								strcat(current_savestate_filename, ".svs");
+								save_state((const char*)current_savestate_filename, GBA_screen);
+							break;
+							case 3:
+								done = 2;
+							break;
+						}
+						break;
+					}
+					break;
+				}
 				default:
 				break;
 			}
@@ -151,9 +200,6 @@ uint32_t MyGUI()
 	SDL_FillRect(screen, NULL, 0);
 	SDL_FillRect(display, NULL, 0);
 	SDL_Flip(display);
-	
-	if (background_tmp != NULL) SDL_FreeSurface(background_tmp);
-	if (backbuffer != NULL) SDL_FreeSurface(backbuffer);
 	
 	if (done == 2) return 1;
 	else return 0;

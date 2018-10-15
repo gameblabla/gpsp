@@ -3929,7 +3929,48 @@ void update_normal(void)
 
 void update_display(void)
 {
-	if(screen_scale == 0){
+	SDL_Rect rect, rect2;
+	uint32_t *s = (uint32_t*)screen->pixels;
+	uint32_t *d = (uint32_t*)display->pixels;
+	uint8_t y;
+	
+	switch(screen_scale)
+	{
+		case 0:
+		for(y = 0; y < 240; y++, s += 160, d += 320) 
+			memmove(d, s, 1280);
+		break;
+		case 1:
+			rect.x = 40;
+			rect.y = 40;
+			rect.w = 240;
+			rect.h = 160;
+			
+			rect2.x = 0;
+			rect2.y = 26;
+			rect2.w = 320;
+			rect2.h = 213*2;
+			SDL_SoftStretch(screen, &rect, display, &rect2);
+		break;
+		case 2:
+			rect.x = 40;
+			rect.y = 40;
+			rect.w = 240;
+			rect.h = 160;
+			
+			rect2.x = 0;
+			rect2.y = 0;
+			rect2.w = 320;
+			rect2.h = 480;
+			SDL_SoftStretch(screen, &rect, display, &rect2);
+		break;
+	}
+
+	/* Couldn't figure out this shit, besides it doesn't work well over TV Out. */
+	/*uint32_t *src = (uint32_t *)screen->pixels + 20 + 80 * (320 - 240);
+	gba_upscale_aspect((uint16_t*) ((uint8_t*)display->pixels + (((480 - (160) * 8 / 3) / 2) * display->pitch)), src, 240, 160, screen->pitch, display->pitch);
+	*/
+	/*if(screen_scale == 0){
 		//SDL_BlitSurface(screen,NULL,display,NULL);
 		if(SDL_MUSTLOCK(display)) SDL_LockSurface(display);
 		int x, y;
@@ -3948,8 +3989,8 @@ void update_display(void)
 		uint32_t *src = (uint32_t *)screen->pixels + 20 + 80 * (320 - 240);
 		//gba_upscale((uint32_t*)display->pixels, src, 240, 160, (320 - 240) * 2);
 		gba_upscale((uint32_t*)display->pixels, src, 240, 160, screen->pitch, display->pitch);
-	}
-
+	}*/
+	
 	SDL_Flip(display);
 }
 
