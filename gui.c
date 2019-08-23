@@ -690,7 +690,7 @@ s32 load_game_config_file()
   random_skip = 0;
   clock_speed = 4;
 
-  for(i = 0; i < 10; i++)
+  for(i = 0; i < MAX_CHEATS; i++)
   {
     cheats[i].cheat_active = 0;
   }
@@ -783,7 +783,7 @@ s32 save_game_config_file()
     file_options[2] = random_skip;
     file_options[3] = clock_speed;
 
-    for(i = 0; i < 10; i++)
+    for(i = 0; i < MAX_CHEATS; i++)
     {
       file_options[4 + i] = cheats[i].cheat_active;
     }
@@ -1388,7 +1388,7 @@ u32 menu(u16 *original_screen)
 
   choose_menu(&main_menu);
 
-  for(i = 0; i < 10; i++)
+  for(i = 0; i < MAX_CHEATS; i++)
   {
     if(i >= num_cheats)
     {
