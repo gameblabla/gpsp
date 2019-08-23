@@ -1,0 +1,22 @@
+
+TARGET := gpsp.dge
+
+CC := /opt/rs97-toolchain/usr/bin/mipsel-linux-gcc
+SDL_CONFIG := /opt/rs97-toolchain/usr/mipsel-buildroot-linux-musl/sysroot/usr/bin/sdl-config
+
+OBJS := k3s/main.o cpu.o memory.o k3s/video.o k3s/input.o sound.o gui.o \
+	cheats.o zip.o cpu_threaded.o mips_stub.o k3s/mygui.o sha1.o
+
+CFLAGS := -fprofile-use -I. -Wall -Ofast -flto -DZAURUS -DRS97 -mno-abicalls -mplt -mips32 -fdata-sections -ffunction-sections -mno-check-zero-division  -mno-check-zero-division -mframe-header-opt -fsingle-precision-constant -fno-common -mips32 -fno-PIC -mno-abicalls -DMIPS_BUILD
+ASFLAGS := $(CFLAGS)
+LDFLAGS :=  -lSDL -lc -lm -lgcc -lz -Wl,--as-needed -Wl,--gc-sections -s -flto
+
+.PHONY: all $(TARGET) clean
+
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+
+clean:
+	rm -f $(TARGET) $(OBJS)
